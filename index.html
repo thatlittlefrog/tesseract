@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STM32 Pinout Viewer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Drop Zone (initial view) -->
+  <div id="drop-zone" class="drop-zone">
+    <div class="drop-content">
+      <div class="drop-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <polyline points="9 15 12 12 15 15"/>
+        </svg>
+      </div>
+      <h1>STM32 Pinout Viewer</h1>
+      <p>Drop an MCU XML file from
+        <a href="https://github.com/STMicroelectronics/STM32_open_pin_data" target="_blank" rel="noopener">STM32_open_pin_data</a>
+      </p>
+      <p class="drop-hint">or click to browse &mdash; files are in <code>mcu/</code> directory</p>
+      <p class="drop-hint">e.g. <code>STM32H743ZITx.xml</code>, <code>STM32F042K(4-6)Tx.xml</code></p>
+      <p class="drop-error" style="display:none"></p>
+    </div>
+    <input type="file" id="file-input" accept=".xml" style="display:none">
+  </div>
+
+  <!-- Toolbar (hidden until file loaded) -->
+  <div id="toolbar" style="display:none">
+    <div class="toolbar-left">
+      <button id="btn-load-new" class="toolbar-btn" title="Load new MCU (Ctrl+O)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Load MCU
+      </button>
+      <button id="btn-clear" class="toolbar-btn" title="Clear all assignments">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        Clear All
+      </button>
+    </div>
+    <div class="toolbar-right">
+      <span class="toolbar-label">Export:</span>
+      <button id="btn-export-json" class="toolbar-btn btn-export" title="Export assignments as JSON">JSON</button>
+      <button id="btn-export-csv" class="toolbar-btn btn-export" title="Export assignments as CSV">CSV</button>
+      <button id="btn-export-text" class="toolbar-btn btn-export" title="Export assignments as text table">TXT</button>
+      <button id="btn-export-full" class="toolbar-btn btn-export" title="Export full pinout table (all pins)">Full Pinout</button>
+    </div>
+  </div>
+
+  <!-- Main View (hidden until file loaded) -->
+  <div id="main-view" style="display:none">
+    <div id="chip-container" class="chip-container"></div>
+    <div id="sidebar" class="sidebar"></div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

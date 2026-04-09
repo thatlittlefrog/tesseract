@@ -1,0 +1,893 @@
+/* ─── Reset & Base ──────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-tertiary: #0f3460;
+  --bg-surface: #1e2746;
+  --bg-hover: #263352;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a8c0;
+  --text-muted: #6b7394;
+  --accent: #4fc3f7;
+  --accent-dim: #2a7da8;
+  --border: #2a3456;
+  --border-light: #3a4a6e;
+  --success: #66bb6a;
+  --warning: #ffa726;
+  --error: #ef5350;
+  --pin-io: #4a6741;
+  --pin-power: #555;
+  --pin-reset: #8d6e63;
+  --pin-boot: #78909c;
+  --chip-body: #2a2a3e;
+  --chip-body-stroke: #4a5580;
+  --font-mono: "JetBrains Mono", "Fira Code", "SF Mono", "Cascadia Code", Consolas, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code {
+  font-family: var(--font-mono);
+  background: var(--bg-surface);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+/* ─── Drop Zone ────────────────────────────────────────────────────── */
+
+.drop-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.drop-zone.drag-over {
+  background: var(--bg-tertiary);
+}
+
+.drop-zone.drag-over .drop-content {
+  border-color: var(--accent);
+}
+
+.drop-content {
+  text-align: center;
+  padding: 60px 80px;
+  border: 2px dashed var(--border-light);
+  border-radius: 16px;
+  max-width: 600px;
+  transition: border-color 0.2s;
+}
+
+.drop-content:hover {
+  border-color: var(--accent-dim);
+}
+
+.drop-icon {
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.drop-content h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.drop-content p {
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.drop-hint {
+  font-size: 12px;
+  color: var(--text-muted) !important;
+}
+
+.drop-error {
+  color: var(--error) !important;
+  font-weight: 500;
+  margin-top: 12px;
+}
+
+/* ─── Toolbar ──────────────────────────────────────────────────────── */
+
+#toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.toolbar-left, .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar-label {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-right: 2px;
+}
+
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.toolbar-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-light);
+}
+
+.toolbar-btn svg {
+  flex-shrink: 0;
+}
+
+.btn-export {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 8px;
+}
+
+/* ─── Main Layout ──────────────────────────────────────────────────── */
+
+#main-view {
+  display: flex;
+  height: calc(100vh - 41px); /* toolbar height */
+  overflow: hidden;
+}
+
+.chip-container {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--bg-primary);
+}
+
+.sidebar {
+  width: 360px;
+  min-width: 300px;
+  max-width: 500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── SVG Chip Diagram ─────────────────────────────────────────────── */
+
+.chip-svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.chip-body {
+  fill: var(--chip-body);
+  stroke: var(--chip-body-stroke);
+  stroke-width: 2;
+}
+
+.pin1-marker {
+  fill: var(--text-muted);
+}
+
+.chip-label-name {
+  fill: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.chip-label-pkg {
+  fill: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.chip-label-info {
+  fill: var(--text-muted);
+  font-size: 10px;
+}
+
+/* Pin pads */
+.pin-pad {
+  fill: var(--pin-io);
+  stroke: #333;
+  stroke-width: 0.5;
+  cursor: pointer;
+  transition: fill 0.15s, opacity 0.15s;
+}
+
+.pin-pad.pin-type-power {
+  fill: var(--pin-power);
+  cursor: default;
+}
+
+.pin-pad.pin-type-reset {
+  fill: var(--pin-reset);
+  cursor: pointer;
+}
+
+.pin-pad.pin-type-boot,
+.pin-pad.pin-type-monoio {
+  fill: var(--pin-boot);
+  cursor: pointer;
+}
+
+.pin-pad.pin-assigned {
+  stroke: #fff;
+  stroke-width: 1;
+}
+
+.pin-pad.pin-highlighted {
+  stroke: #fff;
+  stroke-width: 1.5;
+  filter: brightness(1.3);
+}
+
+.pin-pad.pin-dimmed {
+  opacity: 0.25;
+}
+
+.pin-pad.pin-selected {
+  stroke: var(--accent);
+  stroke-width: 2;
+  filter: brightness(1.4);
+}
+
+/* BGA balls */
+.pin-ball {
+  fill: var(--pin-io);
+  stroke: #222;
+  stroke-width: 0.5;
+  cursor: pointer;
+  transition: fill 0.15s, opacity 0.15s;
+}
+
+.pin-ball.pin-type-power {
+  fill: var(--pin-power);
+}
+
+.pin-ball.pin-assigned {
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.pin-ball.pin-highlighted {
+  stroke: #fff;
+  stroke-width: 1.5;
+  filter: brightness(1.3);
+}
+
+.pin-ball.pin-dimmed {
+  opacity: 0.25;
+}
+
+.pin-ball.pin-selected {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.pin-bga-label {
+  fill: #000;
+  font-family: var(--font-mono);
+  font-size: 6px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* Pin labels */
+.pin-name-label {
+  fill: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pin-assignment-label {
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  pointer-events: none;
+  user-select: none;
+  font-weight: 600;
+}
+
+/* Hover effect */
+.pin-group.hovered .pin-pad,
+.pin-group.hovered .pin-ball {
+  filter: brightness(1.4);
+  stroke-width: 1.5;
+}
+
+.pin-group.hovered .pin-name-label {
+  fill: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ─── Tooltip ──────────────────────────────────────────────────────── */
+
+.pin-tooltip {
+  position: fixed;
+  z-index: 1000;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  max-width: 280px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.pin-tooltip strong {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.tooltip-type {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.tooltip-assigned {
+  color: var(--success);
+  font-weight: 500;
+}
+
+.tooltip-header {
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-top: 4px;
+  display: block;
+}
+
+.tooltip-signals {
+  list-style: none;
+  margin-top: 4px;
+}
+
+.tooltip-signals li {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 1px 0;
+}
+
+.tooltip-signals li.tooltip-active {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.tooltip-gpio {
+  color: var(--text-muted) !important;
+  font-style: italic;
+}
+
+/* ─── Sidebar ──────────────────────────────────────────────────────── */
+
+.sidebar-section {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* MCU Info */
+.mcu-info h2 {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.mcu-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.mcu-meta span {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* Search */
+.search-section {
+  padding: 8px 14px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 7px 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search-input:focus {
+  border-color: var(--accent-dim);
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Section headers */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.section-header h3 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.periph-count, .assign-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+}
+
+/* Peripheral list */
+.periph-section {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 200px;
+}
+
+.periph-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.periph-group {
+  margin-bottom: 6px;
+}
+
+.periph-group-header {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  padding: 4px 6px 2px;
+}
+
+.periph-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.periph-item:hover,
+.periph-item.active {
+  background: var(--bg-hover);
+}
+
+.periph-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.periph-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.periph-signal-count {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.periph-assigned-badge {
+  font-size: 10px;
+  color: var(--success);
+  background: rgba(102, 187, 106, 0.15);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+/* Peripheral detail expand */
+.periph-detail-expand {
+  margin-top: 6px;
+  padding: 6px 0 4px 14px;
+  border-top: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.periph-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 0;
+  font-size: 11px;
+  min-width: 0;
+}
+
+.periph-detail-row + .periph-detail-row {
+  border-top: 1px solid var(--border);
+}
+
+.periph-detail-signal {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.periph-detail-pins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding-left: 4px;
+}
+
+.periph-pin-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 2px 5px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.periph-pin-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--accent-dim);
+}
+
+.periph-pin-btn.selected {
+  background: var(--accent-dim);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.periph-pin-btn.occupied {
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  border-color: var(--warning);
+  opacity: 0.7;
+}
+
+/* ─── Pin Detail Panel ─────────────────────────────────────────────── */
+
+.pin-detail-section {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.detail-header h3 {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.detail-pos {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.detail-type {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.detail-type.type-io {
+  background: rgba(74, 103, 65, 0.3);
+  color: var(--success);
+}
+
+.detail-type.type-power {
+  background: rgba(85, 85, 85, 0.3);
+  color: #aaa;
+}
+
+.detail-type.type-reset {
+  background: rgba(141, 110, 99, 0.3);
+  color: #bcaaa4;
+}
+
+.detail-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.detail-close:hover {
+  color: var(--text-primary);
+}
+
+.detail-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.detail-signals {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.detail-signal-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: background 0.1s;
+}
+
+.detail-signal-item:hover {
+  background: var(--bg-hover);
+}
+
+.detail-signal-item.assigned {
+  background: rgba(102, 187, 106, 0.1);
+  border: 1px solid rgba(102, 187, 106, 0.2);
+}
+
+.detail-signal-item.gpio-item {
+  opacity: 0.6;
+}
+
+.detail-signal-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.detail-assign-btn {
+  margin-left: auto;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.1s;
+}
+
+.btn-assign {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.btn-assign:hover {
+  background: var(--accent-dim);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.btn-unassign {
+  background: rgba(239, 83, 80, 0.15);
+  color: var(--error);
+  border: 1px solid rgba(239, 83, 80, 0.3);
+}
+
+.btn-unassign:hover {
+  background: rgba(239, 83, 80, 0.25);
+}
+
+/* ─── Assignments Summary ──────────────────────────────────────────── */
+
+.assign-section {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.assign-empty {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 4px;
+}
+
+.assign-group {
+  margin-bottom: 8px;
+}
+
+.assign-group-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.assign-group-name {
+  font-family: var(--font-mono);
+}
+
+.assign-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0 2px 16px;
+  font-size: 11px;
+}
+
+.assign-pin {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  min-width: 40px;
+}
+
+.assign-arrow {
+  color: var(--text-muted);
+}
+
+.assign-signal {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.assign-remove {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.assign-row:hover .assign-remove {
+  opacity: 1;
+}
+
+.assign-remove:hover {
+  color: var(--error);
+}
+
+/* ─── Scrollbar Styling ────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ─── Responsive ───────────────────────────────────────────────────── */
+
+@media (max-width: 800px) {
+  #main-view {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    max-width: none;
+    max-height: 40vh;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .chip-container {
+    min-height: 50vh;
+  }
+}
