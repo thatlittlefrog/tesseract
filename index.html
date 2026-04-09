@@ -7,37 +7,30 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Drop Zone (initial view) -->
-  <div id="drop-zone" class="drop-zone">
-    <div class="drop-content">
-      <div class="drop-icon">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="12" y1="18" x2="12" y2="12"/>
-          <polyline points="9 15 12 12 15 15"/>
-        </svg>
-      </div>
+  <!-- Start Screen -->
+  <div id="start-screen" class="start-screen">
+    <div class="start-content">
       <h1>STM32 Pinout Viewer</h1>
-      <p>Drop an MCU XML file from
-        <a href="https://github.com/STMicroelectronics/STM32_open_pin_data" target="_blank" rel="noopener">STM32_open_pin_data</a>
+      <p class="start-subtitle">Search for any MCU from the
+        <a href="https://github.com/STMicroelectronics/STM32_open_pin_data" target="_blank" rel="noopener">STM32_open_pin_data</a> repository
       </p>
-      <p class="drop-hint">or click to browse &mdash; files are in <code>mcu/</code> directory</p>
-      <p class="drop-hint">e.g. <code>STM32H743ZITx.xml</code>, <code>STM32F042K(4-6)Tx.xml</code></p>
-      <p class="drop-error" style="display:none"></p>
+      <div class="mcu-browser" id="mcu-browser">
+        <input type="text" id="mcu-search" placeholder="e.g. H743, F042, N657..." autocomplete="off" spellcheck="false" autofocus>
+        <div id="mcu-results" class="mcu-results"></div>
+        <p id="mcu-status" class="mcu-status"></p>
+      </div>
     </div>
-    <input type="file" id="file-input" accept=".xml" style="display:none">
   </div>
 
   <!-- Toolbar (hidden until file loaded) -->
   <div id="toolbar" style="display:none">
     <div class="toolbar-left">
-      <button id="btn-load-new" class="toolbar-btn" title="Load new MCU (Ctrl+O)">
+      <button id="btn-load-new" class="toolbar-btn" title="Search for another MCU (Ctrl+O)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        Load MCU
+        Search MCU
       </button>
       <button id="btn-clear" class="toolbar-btn" title="Clear all assignments">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

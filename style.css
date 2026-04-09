@@ -7,18 +7,18 @@
 }
 
 :root {
-  --bg-primary: #1a1a2e;
-  --bg-secondary: #16213e;
-  --bg-tertiary: #0f3460;
-  --bg-surface: #1e2746;
-  --bg-hover: #263352;
-  --text-primary: #e0e0e0;
-  --text-secondary: #a0a8c0;
-  --text-muted: #6b7394;
+  --bg-primary: #111;
+  --bg-secondary: #181818;
+  --bg-tertiary: #252525;
+  --bg-surface: #1c1c1c;
+  --bg-hover: #2a2a2a;
+  --text-primary: #e8e8e8;
+  --text-secondary: #a0a0a0;
+  --text-muted: #666;
   --accent: #4fc3f7;
   --accent-dim: #2a7da8;
-  --border: #2a3456;
-  --border-light: #3a4a6e;
+  --border: #2a2a2a;
+  --border-light: #3a3a3a;
   --success: #66bb6a;
   --warning: #ffa726;
   --error: #ef5350;
@@ -26,9 +26,8 @@
   --pin-power: #555;
   --pin-reset: #8d6e63;
   --pin-boot: #78909c;
-  --chip-body: #2a2a3e;
-  --chip-body-stroke: #4a5580;
-  --font-mono: "JetBrains Mono", "Fira Code", "SF Mono", "Cascadia Code", Consolas, monospace;
+  --chip-body: #1a1a1a;
+  --chip-body-stroke: #444;
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 }
 
@@ -52,71 +51,139 @@ a:hover {
 }
 
 code {
-  font-family: var(--font-mono);
   background: var(--bg-surface);
   padding: 1px 5px;
   border-radius: 3px;
   font-size: 0.9em;
 }
 
-/* ─── Drop Zone ────────────────────────────────────────────────────── */
+/* ─── Start Screen ─────────────────────────────────────────────────── */
 
-.drop-zone {
+.start-screen {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   height: 100vh;
-  cursor: pointer;
-  transition: background 0.2s;
+  padding-top: 20vh;
 }
 
-.drop-zone.drag-over {
-  background: var(--bg-tertiary);
-}
-
-.drop-zone.drag-over .drop-content {
-  border-color: var(--accent);
-}
-
-.drop-content {
+.start-content {
   text-align: center;
-  padding: 60px 80px;
-  border: 2px dashed var(--border-light);
-  border-radius: 16px;
-  max-width: 600px;
-  transition: border-color 0.2s;
+  padding: 60px 40px;
+  max-width: 500px;
+  width: 100%;
 }
 
-.drop-content:hover {
-  border-color: var(--accent-dim);
-}
-
-.drop-icon {
-  color: var(--text-muted);
-  margin-bottom: 20px;
-}
-
-.drop-content h1 {
+.start-content h1 {
   font-size: 24px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   color: var(--text-primary);
 }
 
-.drop-content p {
+.start-subtitle {
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: 24px;
+  font-size: 14px;
 }
 
-.drop-hint {
+/* ─── MCU Browser (in drop zone) ──────────────────────────────────── */
+
+.mcu-browser {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+#mcu-search {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#mcu-search:focus {
+  border-color: var(--accent);
+}
+
+#mcu-search::placeholder {
+  color: var(--text-muted);
+}
+
+.mcu-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  display: none;
+  z-index: 100;
+}
+
+.mcu-results.visible {
+  display: block;
+}
+
+.mcu-result-item {
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+.mcu-result-item:last-child {
+  border-bottom: none;
+}
+
+.mcu-result-item:hover,
+.mcu-result-item.active {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.mcu-result-item mark {
+  background: none;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.mcu-result-count {
+  padding: 6px 14px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.mcu-status {
   font-size: 12px;
-  color: var(--text-muted) !important;
+  color: var(--text-muted);
+  margin-top: 8px;
 }
 
-.drop-error {
-  color: var(--error) !important;
-  font-weight: 500;
-  margin-top: 12px;
+.mcu-status.error {
+  color: var(--error);
+}
+
+.mcu-result-item.loading {
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.mcu-result-item.loading::after {
+  content: " ...";
 }
 
 /* ─── Toolbar ──────────────────────────────────────────────────────── */
@@ -170,7 +237,6 @@ code {
 }
 
 .btn-export {
-  font-family: var(--font-mono);
   font-size: 11px;
   padding: 4px 8px;
 }
@@ -224,14 +290,14 @@ code {
 
 .chip-label-name {
   fill: var(--text-primary);
-  font-family: var(--font-mono);
+
   font-size: 13px;
   font-weight: 600;
 }
 
 .chip-label-pkg {
   fill: var(--text-secondary);
-  font-family: var(--font-mono);
+
   font-size: 11px;
 }
 
@@ -321,7 +387,7 @@ code {
 
 .pin-bga-label {
   fill: #000;
-  font-family: var(--font-mono);
+
   font-size: 6px;
   font-weight: 600;
   pointer-events: none;
@@ -330,14 +396,14 @@ code {
 /* Pin labels */
 .pin-name-label {
   fill: var(--text-secondary);
-  font-family: var(--font-mono);
+
   font-size: 8.5px;
   pointer-events: none;
   user-select: none;
 }
 
 .pin-assignment-label {
-  font-family: var(--font-mono);
+
   font-size: 7.5px;
   pointer-events: none;
   user-select: none;
@@ -373,7 +439,7 @@ code {
 
 .pin-tooltip strong {
   color: var(--accent);
-  font-family: var(--font-mono);
+
   font-size: 13px;
 }
 
@@ -400,7 +466,7 @@ code {
 }
 
 .tooltip-signals li {
-  font-family: var(--font-mono);
+
   font-size: 11px;
   color: var(--text-secondary);
   padding: 1px 0;
@@ -427,7 +493,7 @@ code {
 
 /* MCU Info */
 .mcu-info h2 {
-  font-family: var(--font-mono);
+
   font-size: 15px;
   font-weight: 600;
   color: var(--accent);
@@ -496,7 +562,7 @@ code {
   background: var(--bg-primary);
   padding: 1px 6px;
   border-radius: 10px;
-  font-family: var(--font-mono);
+
 }
 
 /* Peripheral list */
@@ -548,7 +614,7 @@ code {
 }
 
 .periph-name {
-  font-family: var(--font-mono);
+
   font-size: 12px;
   font-weight: 500;
   color: var(--text-primary);
@@ -591,7 +657,7 @@ code {
 }
 
 .periph-detail-signal {
-  font-family: var(--font-mono);
+
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -607,7 +673,7 @@ code {
 }
 
 .periph-pin-btn {
-  font-family: var(--font-mono);
+
   font-size: 10px;
   max-width: 80px;
   overflow: hidden;
@@ -656,7 +722,7 @@ code {
 }
 
 .detail-header h3 {
-  font-family: var(--font-mono);
+
   font-size: 16px;
   font-weight: 600;
   color: var(--accent);
@@ -739,7 +805,7 @@ code {
 }
 
 .detail-signal-name {
-  font-family: var(--font-mono);
+
   font-size: 12px;
   color: var(--text-primary);
 }
@@ -805,7 +871,7 @@ code {
 }
 
 .assign-group-name {
-  font-family: var(--font-mono);
+
 }
 
 .assign-row {
@@ -817,7 +883,7 @@ code {
 }
 
 .assign-pin {
-  font-family: var(--font-mono);
+
   color: var(--accent);
   min-width: 40px;
 }
@@ -827,7 +893,7 @@ code {
 }
 
 .assign-signal {
-  font-family: var(--font-mono);
+
   color: var(--text-secondary);
 }
 

@@ -5,6 +5,7 @@ import { AssignmentState } from "./conflicts.js";
 import { renderChip, createTooltip } from "./renderer.js";
 import { renderSidebar } from "./sidebar.js";
 import { exportJSON, exportCSV, exportText, exportFullPinout, downloadFile } from "./export.js";
+import { fetchMcuList, fetchMcuXml, filterMcuList } from "./browser.js";
 
 // ─── App State ──────────────────────────────────────────────────────────
 
@@ -22,8 +23,7 @@ const appState = {
 
 // ─── DOM References ─────────────────────────────────────────────────────
 
-const dropZone = document.getElementById("drop-zone");
-const fileInput = document.getElementById("file-input");
+const startScreen = document.getElementById("start-screen");
 const chipContainer = document.getElementById("chip-container");
 const sidebarContainer = document.getElementById("sidebar");
 const toolbar = document.getElementById("toolbar");
@@ -34,55 +34,152 @@ const mainView = document.getElementById("main-view");
 const tooltip = createTooltip();
 let tooltipTimer = null;
 
-// ─── File Loading ───────────────────────────────────────────────────────
+// ─── MCU Browser ────────────────────────────────────────────────────────
 
-dropZone.addEventListener("dragover", (e) => {
-  e.preventDefault();
-  dropZone.classList.add("drag-over");
+const mcuSearch = document.getElementById("mcu-search");
+const mcuResults = document.getElementById("mcu-results");
+const mcuStatus = document.getElementById("mcu-status");
+
+/** @type {string[]|null} */
+let mcuList = null;
+let activeResultIndex = -1;
+let debounceTimer = null;
+
+mcuSearch.addEventListener("input", () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => handleSearch(mcuSearch.value), 150);
 });
 
-dropZone.addEventListener("dragleave", () => {
-  dropZone.classList.remove("drag-over");
-});
-
-dropZone.addEventListener("drop", (e) => {
-  e.preventDefault();
-  dropZone.classList.remove("drag-over");
-  const files = e.dataTransfer.files;
-  if (files.length > 0) loadFile(files[0]);
-});
-
-dropZone.addEventListener("click", () => {
-  fileInput.click();
-});
-
-fileInput.addEventListener("change", () => {
-  if (fileInput.files.length > 0) {
-    loadFile(fileInput.files[0]);
+mcuSearch.addEventListener("keydown", (e) => {
+  const items = mcuResults.querySelectorAll(".mcu-result-item");
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    activeResultIndex = Math.min(activeResultIndex + 1, items.length - 1);
+    updateActiveResult(items);
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    activeResultIndex = Math.max(activeResultIndex - 1, 0);
+    updateActiveResult(items);
+  } else if (e.key === "Enter" && activeResultIndex >= 0 && items[activeResultIndex]) {
+    e.preventDefault();
+    items[activeResultIndex].click();
+  } else if (e.key === "Escape") {
+    mcuResults.classList.remove("visible");
+    mcuSearch.blur();
   }
 });
 
-async function loadFile(file) {
-  if (!file.name.endsWith(".xml")) {
-    showError("Please select an XML file from the STM32_open_pin_data repository.");
+function updateActiveResult(items) {
+  items.forEach((el, i) => el.classList.toggle("active", i === activeResultIndex));
+  if (items[activeResultIndex]) {
+    items[activeResultIndex].scrollIntoView({ block: "nearest" });
+  }
+}
+
+async function handleSearch(query) {
+  activeResultIndex = -1;
+
+  if (!query.trim()) {
+    mcuResults.classList.remove("visible");
+    mcuResults.innerHTML = "";
+    mcuStatus.textContent = "";
     return;
   }
 
+  // Fetch list on first search
+  if (!mcuList) {
+    mcuStatus.textContent = "Fetching MCU list from GitHub...";
+    mcuStatus.className = "mcu-status";
+    try {
+      mcuList = await fetchMcuList();
+      mcuStatus.textContent = `${mcuList.length} MCUs available`;
+    } catch (err) {
+      mcuStatus.textContent = err.message;
+      mcuStatus.className = "mcu-status error";
+      return;
+    }
+  }
+
+  const matches = filterMcuList(mcuList, query);
+  renderResults(matches, query);
+}
+
+function renderResults(matches, query) {
+  mcuResults.innerHTML = "";
+
+  if (matches.length === 0) {
+    mcuResults.classList.remove("visible");
+    return;
+  }
+
+  // Show count if many matches
+  const display = matches.slice(0, 50);
+  if (matches.length > 50) {
+    const countEl = document.createElement("div");
+    countEl.className = "mcu-result-count";
+    countEl.textContent = `Showing 50 of ${matches.length} matches — keep typing to narrow`;
+    mcuResults.appendChild(countEl);
+  }
+
+  for (const name of display) {
+    const displayName = name.replace(/\.xml$/i, "");
+    const item = document.createElement("div");
+    item.className = "mcu-result-item";
+    item.innerHTML = highlightMatch(displayName, query);
+    item.addEventListener("click", () => {
+      selectMcuFromBrowser(name, item);
+    });
+    mcuResults.appendChild(item);
+  }
+
+  mcuResults.classList.add("visible");
+}
+
+function highlightMatch(name, query) {
+  const idx = name.toLowerCase().indexOf(query.toLowerCase().trim());
+  if (idx === -1) return escapeHtml(name);
+  const before = name.slice(0, idx);
+  const match = name.slice(idx, idx + query.trim().length);
+  const after = name.slice(idx + query.trim().length);
+  return escapeHtml(before) + "<mark>" + escapeHtml(match) + "</mark>" + escapeHtml(after);
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+async function selectMcuFromBrowser(filename, itemEl) {
+  // Show loading state
+  itemEl.classList.add("loading");
+  itemEl.textContent = `Loading ${filename}`;
+  mcuSearch.disabled = true;
+
   try {
-    const text = await file.text();
-    const mcuData = parseMcuXml(text);
+    const xmlText = await fetchMcuXml(filename);
+    const mcuData = parseMcuXml(xmlText);
 
     appState.mcuData = mcuData;
     appState.assignments.clearAll();
 
     // Switch to main view
-    dropZone.style.display = "none";
+    startScreen.style.display = "none";
     mainView.style.display = "flex";
     toolbar.style.display = "flex";
 
+    // Reset browser state for next time
+    mcuSearch.value = "";
+    mcuSearch.disabled = false;
+    mcuResults.classList.remove("visible");
+    mcuResults.innerHTML = "";
+    mcuStatus.textContent = "";
+
     renderApp();
   } catch (err) {
-    showError(`Failed to parse ${file.name}: ${err.message}`);
+    mcuStatus.textContent = `Failed to load ${filename}: ${err.message}`;
+    mcuStatus.className = "mcu-status error";
+    itemEl.classList.remove("loading");
+    itemEl.textContent = filename;
+    mcuSearch.disabled = false;
     console.error(err);
   }
 }
@@ -201,7 +298,7 @@ function handleUnassign(pinName) {
 // ─── Toolbar Actions ────────────────────────────────────────────────────
 
 document.getElementById("btn-load-new").addEventListener("click", () => {
-  fileInput.click();
+  showStartScreen();
 });
 
 document.getElementById("btn-clear").addEventListener("click", () => {
@@ -249,23 +346,21 @@ document.addEventListener("keydown", (e) => {
     if (detailSection) detailSection.style.display = "none";
   }
 
-  // Ctrl+O: open file
+  // Ctrl+O: search for MCU
   if (e.key === "o" && (e.ctrlKey || e.metaKey)) {
     e.preventDefault();
-    fileInput.click();
+    showStartScreen();
   }
 });
 
-// ─── Error Display ──────────────────────────────────────────────────────
+// ─── Navigation ─────────────────────────────────────────────────────────
 
-function showError(msg) {
-  // Show in drop zone
-  const errEl = dropZone.querySelector(".drop-error");
-  if (errEl) {
-    errEl.textContent = msg;
-    errEl.style.display = "block";
-    setTimeout(() => { errEl.style.display = "none"; }, 5000);
-  } else {
-    alert(msg);
-  }
+function showStartScreen() {
+  mainView.style.display = "none";
+  toolbar.style.display = "none";
+  startScreen.style.display = "flex";
+  mcuSearch.value = "";
+  mcuResults.classList.remove("visible");
+  mcuResults.innerHTML = "";
+  mcuSearch.focus();
 }

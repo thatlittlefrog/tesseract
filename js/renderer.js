@@ -254,12 +254,19 @@ function computeBgaLayout(mcuData) {
 
   const gridW = colNumbers.length;
   const gridH = rowLabels.length;
-  const chipW = gridW * BGA_SPACING + 20;
-  const chipH = gridH * BGA_SPACING + 20;
+
+  // Chip body sized to center the ball grid with even padding
+  const bgaPad = 22;
+  const chipW = (gridW - 1) * BGA_SPACING + 2 * bgaPad;
+  const chipH = (gridH - 1) * BGA_SPACING + 2 * bgaPad;
   const svgWidth = chipW + CHIP_PADDING * 2;
-  const svgHeight = chipH + CHIP_PADDING * 2;
+  const svgHeight = chipH + CHIP_PADDING * 2 + 60; // extra space for label below
   const chipX = CHIP_PADDING;
   const chipY = CHIP_PADDING;
+
+  // Grid origin: balls are centered within the chip body
+  const gridStartX = chipX + bgaPad;
+  const gridStartY = chipY + bgaPad;
 
   const pins = [];
   for (let i = 0; i < sorted.length; i++) {
@@ -268,8 +275,8 @@ function computeBgaLayout(mcuData) {
     const r = rowIndex.get(raw.rowLabel);
     const c = colIndex.get(raw.col);
     pins.push({
-      x: chipX + 10 + c * BGA_SPACING,
-      y: chipY + 10 + r * BGA_SPACING,
+      x: gridStartX + c * BGA_SPACING,
+      y: gridStartY + r * BGA_SPACING,
       w: BGA_BALL_R * 2,
       h: BGA_BALL_R * 2,
       labelSide: "center",
@@ -281,7 +288,7 @@ function computeBgaLayout(mcuData) {
   }
 
   // Pin A1 marker
-  const pin1Marker = { x: chipX + 4, y: chipY + 4 };
+  const pin1Marker = { x: chipX + 6, y: chipY + 6 };
 
   return {
     svgWidth, svgHeight,
@@ -346,7 +353,12 @@ function createCircle(cx, cy, r, className) {
 function createChipLabel(mcuData, layout) {
   const g = document.createElementNS(SVG_NS, "g");
   const cx = layout.chipX + layout.chipW / 2;
-  const cy = layout.chipY + layout.chipH / 2;
+
+  // For BGA, place label below the chip body to avoid overlapping balls
+  const isBga = layout.type === "BGA";
+  const cy = isBga
+    ? layout.chipY + layout.chipH + 28
+    : layout.chipY + layout.chipH / 2;
 
   // MCU name
   const name = document.createElementNS(SVG_NS, "text");
