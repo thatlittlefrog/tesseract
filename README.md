@@ -2,3 +2,5 @@
 
  
  i slopcoded this shitty app to make it easier to view stm32 pinouts. yeah im sorry it sucks what are gonna do about it. 0% human 100% ai ig. dont try to fix it, its not worth your time.
+
+UPDATE!!!!! it doesn't work. don't use this. i don't feel like fixing 
